@@ -1,7 +1,7 @@
 version: 2
 jobs:
   test:
-    working_directory: /usr/src/app
+    working_directory: ~/app
     docker:
       - image: docker:latest
     steps:
@@ -12,7 +12,7 @@ jobs:
           command: |
             docker build -t epic-gateway .
   release:
-    working_directory: /usr/src/app
+    working_directory: ~/app
     docker:
         - image: circleci/node:8
     steps:
