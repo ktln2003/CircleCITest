@@ -17,6 +17,9 @@ jobs:
       - image: docker:latest
     steps:
       - checkout
+      - add_ssh_keys
+          fingerprints:
+            - "25:ed:84:84:a6:e2:e5:f8:fd:3b:c2:e1:21:27:26:32"
       - setup_remote_docker
       - run:
           name: Install dependencies
@@ -30,6 +33,7 @@ jobs:
       - run:
           name: Publish image to container service
           command: |
+            [[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
             login="$(aws ecr get-login --no-include-email --region eu-central-1)"
             ${login}
             image=${IMAGE}:${CIRCLE_BUILD_NUM}
