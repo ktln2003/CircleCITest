@@ -1,0 +1,121 @@
+version: 2
+jobs:
+  test:
+    working_directory: /usr/src/app
+    docker:
+      - image: docker:latest
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --no-cache py-pip
+            pip install awscli
+      - run:
+          name: Build image (lint, test and build)
+          command: |
+            docker build -t ${IMAGE} .
+  release:
+    working_directory: /usr/src/app
+    docker:
+        - image: circleci/node:8
+    steps:
+        - checkout
+        - run:
+            name: Create github release
+            command: |
+                npm install semantic-release
+                npx semantic-release
+  # publish:
+  #   working_directory: ~/app
+  #   docker:
+  #     - image: docker:latest
+  #   steps:
+  #     - checkout
+  #     - setup_remote_docker
+  #     - run:
+  #         name: Install dependencies
+  #         command: |
+  #           apk add --no-cache py-pip
+  #           pip install awscli
+  #     - run:
+  #         name: Build image (lint, test and build)
+  #         command: |
+  #           docker build --build-arg DOCKER_IMAGE_TAG=${CIRCLE_TAG} -t ${IMAGE} .
+  #     - run:
+  #         name: Publish image to container service
+  #         command: |
+  #           login="$(aws ecr get-login --no-include-email --region eu-central-1)"
+  #           ${login}
+  #           image=${IMAGE}:${CIRCLE_TAG}
+  #           docker tag ${IMAGE} "${CONTAINER_REGISTRY}/${image}"
+  #           docker push "${CONTAINER_REGISTRY}/${image}"
+  # publish-dev:
+  #   working_directory: ~/app
+  #   docker:
+  #     - image: docker:latest
+  #   steps:
+  #     - checkout
+  #     - setup_remote_docker
+  #     - run:
+  #         name: Install dependencies
+  #         command: |
+  #           apk add --no-cache py-pip
+  #           pip install awscli
+  #     - run:
+  #         name: Build image (lint, test and build)
+  #         command: |
+  #           docker build --build-arg DOCKER_IMAGE_TAG=${CIRCLE_SHA1} -t ${IMAGE} .
+  #     - run:
+  #         name: Publish image to container service
+  #         command: |
+  #           login="$(aws ecr get-login --no-include-email --region eu-central-1)"
+  #           ${login}
+  #           image=${IMAGE}:${CIRCLE_SHA1}
+  #           docker tag ${IMAGE} "${CONTAINER_REGISTRY}/${image}"
+  #           docker push "${CONTAINER_REGISTRY}/${image}"
+  # deploy-dev:
+  #   machine:
+  #     enabled: true
+  #   working_directory: ~/app
+  #   steps:
+  #     - run:
+  #         name: Deploy to dev environment
+  #         command: |
+  #           login="$(aws ecr get-login --no-include-email --region eu-central-1)"
+  #           image_id=${IMAGE}_dev
+  #           image=${IMAGE}:${CIRCLE_SHA1}
+  #           ssh "${VM_USER}@${VM_HOST}" "${login}"
+  #           ssh "${VM_USER}@${VM_HOST}" "docker pull ${CONTAINER_REGISTRY}/${image}; docker stop ${image_id}; docker rm ${image_id}; docker run -p 3000:8080 --name ${image_id} -d --restart always ${CONTAINER_REGISTRY}/${image}; exit"
+  # deploy-test:
+  #   machine:
+  #     enabled: true
+  #   working_directory: ~/app
+  #   steps:
+  #     - run:
+  #         name: Deploy to test environment
+  #         command: |
+  #           login="$(aws ecr get-login --no-include-email --region eu-central-1)"
+  #           image_id=${IMAGE}_test
+  #           image=${IMAGE}:${CIRCLE_TAG}
+  #           ssh "${VM_USER}@${VM_HOST}" "${login}"
+  #           ssh "${VM_USER}@${VM_HOST}" "docker pull ${CONTAINER_REGISTRY}/${image}; docker stop ${image_id}; docker rm ${image_id}; docker run -p 3001:8080 --name ${image_id} -d --restart always ${CONTAINER_REGISTRY}/${image}; exit"
+  # deploy-stage:
+  #   machine:
+  #     enabled: true
+  #   working_directory: ~/app
+  #   steps:
+  #     - run:
+  #         name: Deploy to stage environment
+  #         command: |
+  #           login="$(aws ecr get-login --no-include-email --region eu-central-1)"
+  #           image_id=${IMAGE}_stage
+  #           image=${IMAGE}:${CIRCLE_TAG}
+  #           ssh "${VM_USER}@${VM_HOST}" "${login}"
+  #           ssh "${VM_USER}@${VM_HOST}" "docker pull ${CONTAINER_REGISTRY}/${image}; docker stop ${image_id}; docker rm ${image_id}; docker run -p 3002:8080 --name ${image_id} -d --restart always ${CONTAINER_REGISTRY}/${image}; exit"
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test:
