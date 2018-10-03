@@ -8,11 +8,6 @@ jobs:
       - checkout
       - setup_remote_docker
       - run:
-          name: Install dependencies
-          command: |
-            apk add --no-cache py-pip
-            pip install awscli
-      - run:
           name: Build image (lint, test and build)
           command: |
             docker build -t epic-gateway .
@@ -119,3 +114,4 @@ workflows:
   test:
     jobs:
       - test
+      - release
