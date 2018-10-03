@@ -29,14 +29,14 @@ jobs:
       - run:
           name: Build image (test and build)
           command: |
-            docker build --build-arg DOCKER_IMAGE_TAG=${CIRCLE_BUILD_NUM} -t ${IMAGE} .
+            docker build --build-arg DOCKER_IMAGE_TAG=${CIRCLE_WORKFLOW_ID} -t ${IMAGE} .
       - run:
           name: Publish image to container service
           command: |
             [[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
             login="$(aws ecr get-login --no-include-email --region eu-central-1)"
             ${login}
-            image=${IMAGE}:${CIRCLE_BUILD_NUM}
+            image=${IMAGE}:${CIRCLE_WORKFLOW_ID}
             docker tag ${IMAGE} "${CONTAINER_REGISTRY}/${image}"
             docker push "${CONTAINER_REGISTRY}/${image}"
   deploy-dev:
@@ -49,7 +49,7 @@ jobs:
           command: |
             login="$(aws ecr get-login --no-include-email --region eu-central-1)"
             image_id=${IMAGE}_dev
-            image=${IMAGE}:${CIRCLE_BUILD_NUM}
+            image=${IMAGE}:${CIRCLE_WORKFLOW_ID}
             ssh "${SWARM_MANAGER_USER}@${SWARM_MANAGER_HOST}" "${login}"
             ssh "${SWARM_MANAGER_USER}@${SWARM_MANAGER_HOST}" "docker pull ${CONTAINER_REGISTRY}/${image}; docker stop ${image_id}; docker rm ${image_id}; docker run -p 3000:8080 --name ${image_id} -d --restart always ${CONTAINER_REGISTRY}/${image}; exit"
   # deploy-test:
