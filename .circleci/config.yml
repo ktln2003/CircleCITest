@@ -8,44 +8,33 @@ jobs:
       - checkout
       - setup_remote_docker
       - run:
-          name: Build image (lint, test and build)
+          name: Build image (test and build) 
           command: |
             docker build -t epic-gateway .
-  release:
+  publish:
     working_directory: ~/app
     docker:
-        - image: circleci/node:8
+      - image: docker:latest
     steps:
-        - checkout
-        - run:
-            name: Create github release
-            command: |
-                npm install semantic-release
-                npx semantic-release
-  # publish:
-  #   working_directory: ~/app
-  #   docker:
-  #     - image: docker:latest
-  #   steps:
-  #     - checkout
-  #     - setup_remote_docker
-  #     - run:
-  #         name: Install dependencies
-  #         command: |
-  #           apk add --no-cache py-pip
-  #           pip install awscli
-  #     - run:
-  #         name: Build image (lint, test and build)
-  #         command: |
-  #           docker build --build-arg DOCKER_IMAGE_TAG=${CIRCLE_TAG} -t ${IMAGE} .
-  #     - run:
-  #         name: Publish image to container service
-  #         command: |
-  #           login="$(aws ecr get-login --no-include-email --region eu-central-1)"
-  #           ${login}
-  #           image=${IMAGE}:${CIRCLE_TAG}
-  #           docker tag ${IMAGE} "${CONTAINER_REGISTRY}/${image}"
-  #           docker push "${CONTAINER_REGISTRY}/${image}"
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --no-cache py-pip
+            pip install awscli
+      - run:
+          name: Build image (test and build)
+          command: |
+            docker build --build-arg DOCKER_IMAGE_TAG=${CIRCLE_TAG} -t ${IMAGE} .
+      - run:
+          name: Publish image to container service
+          command: |
+            login="$(aws ecr get-login --no-include-email --region eu-central-1)"
+            ${login}
+            image=${IMAGE}:${CIRCLE_TAG}
+            docker tag ${IMAGE} "${CONTAINER_REGISTRY}/${image}"
+            docker push "${CONTAINER_REGISTRY}/${image}"
   # publish-dev:
   #   working_directory: ~/app
   #   docker:
@@ -114,6 +103,6 @@ workflows:
   test:
     jobs:
       - test
-      - release:
+      - publish:
           requires:
             - test
