@@ -15,7 +15,7 @@ jobs:
       - run:
           name: Build image (lint, test and build)
           command: |
-            docker build -t ${IMAGE} .
+            docker build -t epic-gateway .
   release:
     working_directory: /usr/src/app
     docker:
