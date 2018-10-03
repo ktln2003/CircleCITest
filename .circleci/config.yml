@@ -114,4 +114,6 @@ workflows:
   test:
     jobs:
       - test
-      - release
+      - release:
+          requires:
+            - test
