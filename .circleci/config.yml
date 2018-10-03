@@ -26,13 +26,13 @@ jobs:
       - run:
           name: Build image (test and build)
           command: |
-            docker build --build-arg DOCKER_IMAGE_TAG=${CIRCLE_TAG} -t ${IMAGE} .
+            docker build --build-arg DOCKER_IMAGE_TAG=${CIRCLE_BUILD_NUM} -t ${IMAGE} .
       - run:
           name: Publish image to container service
           command: |
             login="$(aws ecr get-login --no-include-email --region eu-central-1)"
             ${login}
-            image=${IMAGE}:${CIRCLE_TAG}
+            image=${IMAGE}:${CIRCLE_BUILD_NUM}
             docker tag ${IMAGE} "${CONTAINER_REGISTRY}/${image}"
             docker push "${CONTAINER_REGISTRY}/${image}"
   # publish-dev:
