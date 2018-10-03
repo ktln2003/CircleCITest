@@ -46,8 +46,8 @@ jobs:
             login="$(aws ecr get-login --no-include-email --region eu-central-1)"
             image_id=${IMAGE}_dev
             image=${IMAGE}:${CIRCLE_BUILD_NUM}
-            ssh "${SWARM_MANAGER_USER}@${SWARM_MANAGER_HOST}" "sudo ${login}"
-            ssh "${SWARM_MANAGER_USER}@${SWARM_MANAGER_HOST}" "sudo docker pull ${CONTAINER_REGISTRY}/${image}; docker stop ${image_id}; docker rm ${image_id}; docker run -p 3000:8080 --name ${image_id} -d --restart always ${CONTAINER_REGISTRY}/${image}; exit"
+            ssh "${SWARM_MANAGER_USER}@${SWARM_MANAGER_HOST}" "${login}"
+            ssh "${SWARM_MANAGER_USER}@${SWARM_MANAGER_HOST}" "docker pull ${CONTAINER_REGISTRY}/${image}; docker stop ${image_id}; docker rm ${image_id}; docker run -p 3000:8080 --name ${image_id} -d --restart always ${CONTAINER_REGISTRY}/${image}; exit"
   # deploy-test:
   #   machine:
   #     enabled: true
